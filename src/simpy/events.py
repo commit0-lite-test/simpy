@@ -236,7 +236,8 @@ class Timeout(Event):
 
     def _desc(self) -> str:
         """Return a string *Timeout(delay[, value=value])*."""
-        return f'Timeout({self._delay}{", value=" + repr(self._value) if self._value is not None else ""})'
+        value_str = f", value={repr(self._value)}" if self._value is not None else ""
+        return f'Timeout({self._delay}{value_str})'
 
 
 class Initialize(Event):
@@ -263,6 +264,7 @@ class Interruption(Event):
     """
 
     def __init__(self, process: Process, cause: Optional[Any]):
+        super().__init__(process.env)
         self.env = process.env
         self.callbacks: EventCallbacks = [self._interrupt]
         self._value = Interrupt(cause)
@@ -275,8 +277,12 @@ class Interruption(Event):
         self.process = process
         self.env.schedule(self, URGENT)
 
+    def _interrupt(self, event: Event) -> None:
+        self.process._target.fail(self._value)
 
-ProcessGenerator = Generator[Event, Any, Any]
+
+class ProcessGenerator(Generator[Event, Any, Any]):
+    __name__: str
 
 
 class Process(Event):
@@ -355,7 +361,7 @@ class Process(Event):
                 self._target = self._generator.throw(event._value)
         except StopIteration as e:
             self.succeed(e.value)
-        except BaseException as e:
+        except Exception as e:
             self.fail(e)
         else:
             self.env.schedule(self._target)
@@ -391,7 +397,13 @@ class ConditionValue:
         return f'<ConditionValue {self.todict()}>'
 
     def __iter__(self) -> Iterator[Event]:
-        return self.keys()
+        return iter(self.events)
+
+    def keys(self) -> Iterator[Event]:
+        return iter(self.events)
+
+    def todict(self) -> Dict[Event, Any]:
+        return {event: event._value for event in self.events}
 
 
 class Condition(Event):
@@ -421,7 +433,7 @@ class Condition(Event):
         env: Environment,
         evaluate: Callable[[Tuple[Event, ...], int], bool],
         events: Iterable[Event],
-    ):
+    ) -> None:
         super().__init__(env)
         self._evaluate = evaluate
         self._events = tuple(events)
