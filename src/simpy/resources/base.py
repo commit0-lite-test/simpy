@@ -6,13 +6,28 @@ Base classes of for SimPy's shared resource types.
 These events are triggered once the request has been completed.
 
 """
+
 from __future__ import annotations
-from typing import TYPE_CHECKING, ClassVar, ContextManager, Generic, MutableSequence, Optional, Type, TypeVar, Union
+
+from typing import (
+    TYPE_CHECKING,
+    ClassVar,
+    ContextManager,
+    Generic,
+    MutableSequence,
+    Optional,
+    Type,
+    TypeVar,
+    Union,
+)
+
 from simpy.core import BoundClass, Environment
 from simpy.events import Event, Process
+
 if TYPE_CHECKING:
     from types import TracebackType
 ResourceType = TypeVar('ResourceType', bound='BaseResource')
+
 
 class Put(Event, ContextManager['Put'], Generic[ResourceType]):
     """Generic event for requesting to put something into the *resource*.
@@ -40,7 +55,12 @@ class Put(Event, ContextManager['Put'], Generic[ResourceType]):
     def __enter__(self) -> Put:
         return self
 
-    def __exit__(self, exc_type: Optional[Type[BaseException]], exc_value: Optional[BaseException], traceback: Optional[TracebackType]) -> Optional[bool]:
+    def __exit__(
+        self,
+        exc_type: Optional[Type[BaseException]],
+        exc_value: Optional[BaseException],
+        traceback: Optional[TracebackType],
+    ) -> Optional[bool]:
         self.cancel()
         return None
 
@@ -57,6 +77,7 @@ class Put(Event, ContextManager['Put'], Generic[ResourceType]):
         """
         if self.resource.put_queue and self in self.resource.put_queue:
             self.resource.put_queue.remove(self)
+
 
 class Get(Event, ContextManager['Get'], Generic[ResourceType]):
     """Generic event for requesting to get something from the *resource*.
@@ -84,7 +105,12 @@ class Get(Event, ContextManager['Get'], Generic[ResourceType]):
     def __enter__(self) -> Get:
         return self
 
-    def __exit__(self, exc_type: Optional[Type[BaseException]], exc_value: Optional[BaseException], traceback: Optional[TracebackType]) -> Optional[bool]:
+    def __exit__(
+        self,
+        exc_type: Optional[Type[BaseException]],
+        exc_value: Optional[BaseException],
+        traceback: Optional[TracebackType],
+    ) -> Optional[bool]:
         self.cancel()
         return None
 
@@ -101,8 +127,11 @@ class Get(Event, ContextManager['Get'], Generic[ResourceType]):
         """
         if self.resource.get_queue and self in self.resource.get_queue:
             self.resource.get_queue.remove(self)
+
+
 PutType = TypeVar('PutType', bound=Put)
 GetType = TypeVar('GetType', bound=Get)
+
 
 class BaseResource(Generic[PutType, GetType]):
     """Abstract base class for a shared resource.
@@ -122,6 +151,7 @@ class BaseResource(Generic[PutType, GetType]):
       ``_do_get()`` and ``_do_put()``.
 
     """
+
     PutQueue: ClassVar[Type[MutableSequence]] = list
     'The type to be used for the :attr:`put_queue`. It is a plain\n    :class:`list` by default. The type must support index access (e.g.\n    ``__getitem__()`` and ``__len__()``) as well as provide ``append()`` and\n    ``pop()`` operations.'
     GetQueue: ClassVar[Type[MutableSequence]] = list
@@ -140,19 +170,18 @@ class BaseResource(Generic[PutType, GetType]):
     def capacity(self) -> Union[float, int]:
         """Maximum capacity of the resource."""
         return self._capacity
+
     if TYPE_CHECKING:
 
         def put(self) -> Put:
             """Request to put something into the resource and return a
             :class:`Put` event, which gets triggered once the request
             succeeds."""
-            pass
 
         def get(self) -> Get:
             """Request to get something from the resource and return a
             :class:`Get` event, which gets triggered once the request
             succeeds."""
-            pass
     else:
         put = BoundClass(Put)
         get = BoundClass(Get)
@@ -168,7 +197,7 @@ class BaseResource(Generic[PutType, GetType]):
         :attr:`put_queue`, as long as the return value does not evaluate
         ``False``.
         """
-        raise NotImplementedError("_do_put() must be implemented by subclasses")
+        raise NotImplementedError('_do_put() must be implemented by subclasses')
 
     def _trigger_put(self, get_event: Optional[GetType]) -> None:
         """This method is called once a new put event has been created or a get
@@ -196,7 +225,7 @@ class BaseResource(Generic[PutType, GetType]):
         :attr:`get_queue`, as long as the return value does not evaluate
         ``False``.
         """
-        raise NotImplementedError("_do_get() must be implemented by subclasses")
+        raise NotImplementedError('_do_get() must be implemented by subclasses')
 
     def _trigger_get(self, put_event: Optional[PutType]) -> None:
         """Trigger get events.
