@@ -29,4 +29,4 @@ class Interrupt(SimPyException):
     @property
     def cause(self) -> Optional[Any]:
         """The cause of the interrupt or ``None`` if no cause was provided."""
-        pass
+        return self.args[0] if self.args else None
