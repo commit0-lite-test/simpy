@@ -59,13 +59,13 @@ class BoundClass(Generic[T]):
         return MethodType(self.cls, instance)
 
     @staticmethod
-    def bind_early(instance: object) -> None:
+    def bind_early(instance: Any) -> None:
         """Bind all :class:`BoundClass` attributes of the *instance's* class
         to the instance itself to increase performance."""
         cls = type(instance)
         for name, obj in cls.__dict__.items():
             if isinstance(obj, BoundClass):
-                setattr(instance, name, obj.__get__(instance, cls))
+                setattr(instance, name, obj.__get__(instance, cls))  # type: ignore
 
 
 class EmptySchedule(Exception):
@@ -177,10 +177,11 @@ class Environment:
         # Process the event
         event._ok = True
         if event.callbacks:
-            event.callbacks(event)
+            for callback in event.callbacks:
+                callback(event)
         if not event._defused:
             event._value = event.callbacks
-            event.callbacks = None
+            event.callbacks = []
 
     def run(self, until: Optional[Union[SimTime, Event]] = None) -> Optional[Any]:
         """Executes :meth:`step()` until the given criterion *until* is met.
@@ -197,6 +198,7 @@ class Environment:
           until the environment's time reaches *until*.
 
         """
+        at: Union[Event, float]
         if until is not None:
             if not isinstance(until, Event):
                 # Assume it's a number if it's not None and not an Event
@@ -216,7 +218,8 @@ class Environment:
             else:
                 at = until
 
-            until.callbacks.append(StopSimulation.callback)
+            if isinstance(until, Event):
+                until.callbacks.append(StopSimulation.callback)
 
         try:
             while True:
@@ -224,8 +227,7 @@ class Environment:
         except StopSimulation as exc:
             return exc.args[0]  # == until.value
         except EmptySchedule:
-            if until is not None:
-                if not getattr(at, '_ok', False):
-                    raise RuntimeError(
-                        'No scheduled events left but "until" event was not triggered'
-                    ) from None
+            if until is not None and isinstance(at, Event) and not getattr(at, '_ok', False):
+                raise RuntimeError(
+                    'No scheduled events left but "until" event was not triggered'
+                ) from None
