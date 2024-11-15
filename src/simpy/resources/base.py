@@ -154,14 +154,14 @@ class BaseResource(Generic[PutType, GetType]):
 
     PutQueue: ClassVar[Type[MutableSequence]] = list
     """The type to be used for the :attr:`put_queue`.
-    
+
     It is a plain :class:`list` by default. The type must support index access
     (e.g. ``__getitem__()`` and ``__len__()``) as well as provide ``append()``
     and ``pop()`` operations.
     """
     GetQueue: ClassVar[Type[MutableSequence]] = list
     """The type to be used for the :attr:`get_queue`.
-    
+
     It is a plain :class:`list` by default. The type must support index access
     (e.g. ``__getitem__()`` and ``__len__()``) as well as provide ``append()``
     and ``pop()`` operations.
