@@ -227,7 +227,11 @@ class Environment:
         except StopSimulation as exc:
             return exc.args[0]  # == until.value
         except EmptySchedule:
-            if until is not None and isinstance(at, Event) and not getattr(at, '_ok', False):
+            if (
+                until is not None
+                and isinstance(at, Event)
+                and not getattr(at, '_ok', False)
+            ):
                 raise RuntimeError(
                     'No scheduled events left but "until" event was not triggered'
                 ) from None
