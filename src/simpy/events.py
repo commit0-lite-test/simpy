@@ -13,11 +13,28 @@ used, there are several specialized subclasses of it.
     ~simpy.events.AllOf
 
 """
+
 from __future__ import annotations
-from typing import TYPE_CHECKING, Any, Callable, Dict, Generator, Iterable, Iterator, List, NewType, Optional, Tuple, TypeVar
+
+from typing import (
+    TYPE_CHECKING,
+    Any,
+    Callable,
+    Generator,
+    Iterable,
+    Iterator,
+    List,
+    NewType,
+    Optional,
+    Tuple,
+    TypeVar,
+)
+
 from simpy.exceptions import Interrupt
+
 if TYPE_CHECKING:
     from types import FrameType
+
     from simpy.core import Environment, SimTime
 PENDING: object = object()
 'Unique object to identify pending values of events.'
@@ -26,6 +43,7 @@ URGENT: EventPriority = EventPriority(0)
 'Priority of interrupts and process initialization events.'
 NORMAL: EventPriority = EventPriority(1)
 'Default priority used by events.'
+
 
 class Event:
     """An event that may happen at some point in time.
@@ -57,6 +75,7 @@ class Event:
     of them.
 
     """
+
     _ok: bool
     _defused: bool
     _value: Any = PENDING
@@ -144,7 +163,7 @@ class Event:
         self._defused = event._defused
         self.env.schedule(self)
 
-    def succeed(self, value: Optional[Any]=None) -> Event:
+    def succeed(self, value: Optional[Any] = None) -> Event:
         """Set the event's value, mark it as successful and schedule it for
         processing by the environment. Returns the event instance.
 
@@ -153,7 +172,7 @@ class Event:
         """
         if self._value is not PENDING:
             raise RuntimeError(f'{self} has already been triggered')
-        
+
         self._ok = True
         self._value = value
         self.env.schedule(self)
@@ -172,7 +191,7 @@ class Event:
             raise TypeError('exception must be an Exception instance')
         if self._value is not PENDING:
             raise RuntimeError(f'{self} has already been triggered')
-        
+
         self._ok = False
         self._value = exception
         self._defused = False
@@ -189,9 +208,12 @@ class Event:
         either this event or *other* have been processed (or even both, if they
         happened concurrently)."""
         return Condition(self.env, Condition.any_events, [self, other])
+
+
 EventType = TypeVar('EventType', bound=Event)
 EventCallback = Callable[[EventType], None]
 EventCallbacks = List[EventCallback]
+
 
 class Timeout(Event):
     """A :class:`~simpy.events.Event` that gets processed after a *delay* has
@@ -202,7 +224,7 @@ class Timeout(Event):
 
     """
 
-    def __init__(self, env: Environment, delay: SimTime, value: Optional[Any]=None):
+    def __init__(self, env: Environment, delay: SimTime, value: Optional[Any] = None):
         if delay < 0:
             raise ValueError(f'Negative delay {delay}')
         self.env = env
@@ -215,6 +237,7 @@ class Timeout(Event):
     def _desc(self) -> str:
         """Return a string *Timeout(delay[, value=value])*."""
         return f'Timeout({self._delay}{", value=" + repr(self._value) if self._value is not None else ""})'
+
 
 class Initialize(Event):
     """Initializes a process. Only used internally by :class:`Process`.
@@ -229,6 +252,7 @@ class Initialize(Event):
         self._value: Any = None
         self._ok = True
         env.schedule(self, URGENT)
+
 
 class Interruption(Event):
     """Immediately schedules an :class:`~simpy.exceptions.Interrupt` exception
@@ -250,7 +274,10 @@ class Interruption(Event):
             raise RuntimeError('A process is not allowed to interrupt itself.')
         self.process = process
         self.env.schedule(self, URGENT)
+
+
 ProcessGenerator = Generator[Event, Any, Any]
+
 
 class Process(Event):
     """Process an event yielding generator.
@@ -300,7 +327,7 @@ class Process(Event):
         """``True`` until the process generator exits."""
         return self._value is PENDING
 
-    def interrupt(self, cause: Optional[Any]=None) -> None:
+    def interrupt(self, cause: Optional[Any] = None) -> None:
         """Interrupt this process optionally providing a *cause*.
 
         A process cannot be interrupted if it already terminated. A process can
@@ -312,7 +339,7 @@ class Process(Event):
             raise RuntimeError(f'{self} has terminated and cannot be interrupted.')
         if self is self.env.active_process:
             raise RuntimeError('A process is not allowed to interrupt itself.')
-        
+
         Interruption(self, cause)
 
     def _resume(self, event: Event) -> None:
@@ -320,7 +347,7 @@ class Process(Event):
         the process generator exits, the process itself will get triggered with
         the return value or the exception of the generator."""
         self.env._active_proc = self
-        
+
         try:
             if event._ok:
                 self._target = self._generator.send(event._value)
@@ -332,8 +359,9 @@ class Process(Event):
             self.fail(e)
         else:
             self.env.schedule(self._target)
-        
+
         self.env._active_proc = None
+
 
 class ConditionValue:
     """Result of a :class:`~simpy.events.Condition`. It supports convenient
@@ -365,6 +393,7 @@ class ConditionValue:
     def __iter__(self) -> Iterator[Event]:
         return self.keys()
 
+
 class Condition(Event):
     """An event that gets triggered once the condition function *evaluate*
     returns ``True`` on the given list of *events*.
@@ -387,7 +416,12 @@ class Condition(Event):
 
     """
 
-    def __init__(self, env: Environment, evaluate: Callable[[Tuple[Event, ...], int], bool], events: Iterable[Event]):
+    def __init__(
+        self,
+        env: Environment,
+        evaluate: Callable[[Tuple[Event, ...], int], bool],
+        events: Iterable[Event],
+    ):
         super().__init__(env)
         self._evaluate = evaluate
         self._events = tuple(events)
@@ -397,7 +431,9 @@ class Condition(Event):
             return
         for event in self._events:
             if self.env != event.env:
-                raise ValueError('It is not allowed to mix events from different environments')
+                raise ValueError(
+                    'It is not allowed to mix events from different environments'
+                )
         for event in self._events:
             if event.callbacks is None:
                 self._check(event)
@@ -423,10 +459,10 @@ class Condition(Event):
         """Build the value of this condition."""
         if not self._ok:
             return
-        
+
         value = ConditionValue()
         self._populate_value(value)
-        
+
         self._ok = True
         self._value = value
         self._defused = True
@@ -451,15 +487,17 @@ class Condition(Event):
         so."""
         if self._value is not PENDING:
             return
-        
+
         self._count += 1
-        
+
         if self._evaluate(self._events, self._count):
             self._ok = True
             self.env.schedule(self)
             self._remove_check_callbacks()
-        
-        if not self._ok and any(not e._ok for e in self._events if e._value is not PENDING):
+
+        if not self._ok and any(
+            not e._ok for e in self._events if e._value is not PENDING
+        ):
             self.fail(RuntimeError('Condition failed'))
             self._remove_check_callbacks()
 
@@ -475,6 +513,7 @@ class Condition(Event):
         *events* has been triggered."""
         return count > 0
 
+
 class AllOf(Condition):
     """A :class:`~simpy.events.Condition` event that is triggered if all of
     a list of *events* have been successfully triggered. Fails immediately if
@@ -485,6 +524,7 @@ class AllOf(Condition):
     def __init__(self, env: Environment, events: Iterable[Event]):
         super().__init__(env, Condition.all_events, events)
 
+
 class AnyOf(Condition):
     """A :class:`~simpy.events.Condition` event that is triggered if any of
     a list of *events* has been successfully triggered. Fails immediately if
@@ -494,6 +534,7 @@ class AnyOf(Condition):
 
     def __init__(self, env: Environment, events: Iterable[Event]):
         super().__init__(env, Condition.any_events, events)
+
 
 def _describe_frame(frame: FrameType) -> str:
     """Print filename, line number and function name of a stack frame."""
