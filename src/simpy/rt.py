@@ -1,8 +1,6 @@
 """Execution environment for events that synchronizes passing of time
 with the real-time (aka *wall-clock time*).
-
 """
-
 from time import monotonic, sleep
 
 from simpy.core import Environment, Infinity, SimTime
@@ -13,13 +11,11 @@ class RealtimeEnvironment(Environment):
     synchronized with the real-time (also known as wall-clock time). A time
     step will take *factor* seconds of real time (one second by default).
     A step from ``0`` to ``3`` with a ``factor=0.5`` will, for example, take at
-    least
-    1.5 seconds.
+    least 1.5 seconds.
 
     The :meth:`step()` method will raise a :exc:`RuntimeError` if a time step
     took too long to compute. This behaviour can be disabled by setting
     *strict* to ``False``.
-
     """
 
     def __init__(
@@ -49,7 +45,6 @@ class RealtimeEnvironment(Environment):
         This can be useful to prevent :meth:`step()` from raising an error if
         a lot of time passes between creating the RealtimeEnvironment and
         calling :meth:`run()` or :meth:`step()`.
-
         """
         self.env_start = self._now
         self.real_start = monotonic()
@@ -61,7 +56,6 @@ class RealtimeEnvironment(Environment):
         The delay is scaled according to the real-time :attr:`factor`. With
         :attr:`strict` mode enabled, a :exc:`RuntimeError` will be raised, if
         the event is processed too slowly.
-
         """
         evt_time = self.peek()
 
@@ -73,6 +67,6 @@ class RealtimeEnvironment(Environment):
                 sleep(sleep_time)
 
             if self._strict and monotonic() - real_time > 0:
-                raise RuntimeError('Simulation too slow for real-time execution')
+                raise RuntimeError("Simulation too slow for real-time execution")
 
         return Environment.step(self)
