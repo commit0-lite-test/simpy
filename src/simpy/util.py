@@ -37,7 +37,9 @@ def start_delayed(
     if delay <= 0:
         raise ValueError(f'delay must be > 0, got {delay}')
 
-    def delayed_process(env: Environment, generator: ProcessGenerator, delay: SimTime):
+    def delayed_process(
+        env: Environment, generator: ProcessGenerator, delay: SimTime
+    ) -> ProcessGenerator:
         yield env.timeout(delay)
         yield from generator
 
