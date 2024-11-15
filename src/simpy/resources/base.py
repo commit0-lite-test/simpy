@@ -153,9 +153,19 @@ class BaseResource(Generic[PutType, GetType]):
     """
 
     PutQueue: ClassVar[Type[MutableSequence]] = list
-    'The type to be used for the :attr:`put_queue`. It is a plain\n    :class:`list` by default. The type must support index access (e.g.\n    ``__getitem__()`` and ``__len__()``) as well as provide ``append()`` and\n    ``pop()`` operations.'
+    """The type to be used for the :attr:`put_queue`.
+    
+    It is a plain :class:`list` by default. The type must support index access
+    (e.g. ``__getitem__()`` and ``__len__()``) as well as provide ``append()``
+    and ``pop()`` operations.
+    """
     GetQueue: ClassVar[Type[MutableSequence]] = list
-    'The type to be used for the :attr:`get_queue`. It is a plain\n    :class:`list` by default. The type must support index access (e.g.\n    ``__getitem__()`` and ``__len__()``) as well as provide ``append()`` and\n    ``pop()`` operations.'
+    """The type to be used for the :attr:`get_queue`.
+    
+    It is a plain :class:`list` by default. The type must support index access
+    (e.g. ``__getitem__()`` and ``__len__()``) as well as provide ``append()``
+    and ``pop()`` operations.
+    """
 
     def __init__(self, env: Environment, capacity: Union[float, int]):
         self._env = env
@@ -177,11 +187,13 @@ class BaseResource(Generic[PutType, GetType]):
             """Request to put something into the resource and return a
             :class:`Put` event, which gets triggered once the request
             succeeds."""
+            return Put(self)
 
         def get(self) -> Get:
             """Request to get something from the resource and return a
             :class:`Get` event, which gets triggered once the request
             succeeds."""
+            return Get(self)
     else:
         put = BoundClass(Put)
         get = BoundClass(Get)
