@@ -236,7 +236,7 @@ class Timeout(Event):
 
     def _desc(self) -> str:
         """Return a string *Timeout(delay[, value=value])*."""
-        value_str = f", value={repr(self._value)}" if self._value is not None else ""
+        value_str = f', value={self._value!r}' if self._value is not None else ''
         return f'Timeout({self._delay}{value_str})'
 
 
