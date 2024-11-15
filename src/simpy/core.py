@@ -2,14 +2,40 @@
 Core components for event-discrete simulation environments.
 
 """
+
 from __future__ import annotations
+
 from heapq import heappop, heappush
 from itertools import count
 from types import MethodType
-from typing import TYPE_CHECKING, Any, Generic, Iterable, List, Optional, Tuple, Type, TypeVar, Union
-from simpy.events import NORMAL, URGENT, AllOf, AnyOf, Event, EventPriority, Process, ProcessGenerator, Timeout
+from typing import (
+    TYPE_CHECKING,
+    Any,
+    Generic,
+    Iterable,
+    List,
+    Optional,
+    Tuple,
+    Type,
+    TypeVar,
+    Union,
+)
+
+from simpy.events import (
+    NORMAL,
+    URGENT,
+    AllOf,
+    AnyOf,
+    Event,
+    EventPriority,
+    Process,
+    ProcessGenerator,
+    Timeout,
+)
+
 Infinity: float = float('inf')
 T = TypeVar('T')
+
 
 class BoundClass(Generic[T]):
     """Allows classes to behave like methods.
@@ -23,7 +49,9 @@ class BoundClass(Generic[T]):
     def __init__(self, cls: Type[T]):
         self.cls = cls
 
-    def __get__(self, instance: Optional[BoundClass], owner: Optional[Type[BoundClass]]=None) -> Union[Type[T], MethodType]:
+    def __get__(
+        self, instance: Optional[BoundClass], owner: Optional[Type[BoundClass]] = None
+    ) -> Union[Type[T], MethodType]:
         if instance is None:
             return self.cls
         return MethodType(self.cls, instance)
@@ -37,9 +65,11 @@ class BoundClass(Generic[T]):
             if isinstance(obj, BoundClass):
                 setattr(instance, name, obj.__get__(instance, cls))
 
+
 class EmptySchedule(Exception):
     """Thrown by an :class:`Environment` if there are no further events to be
     processed."""
+
 
 class StopSimulation(Exception):
     """Indicates that the simulation should stop now."""
@@ -49,7 +79,10 @@ class StopSimulation(Exception):
         """Used as callback in :meth:`Environment.run()` to stop the simulation
         when the *until* event occurred."""
         raise cls(event.value)
+
+
 SimTime = Union[int, float]
+
 
 class Environment:
     """Execution environment for an event-based simulation. The passing of time
@@ -63,7 +96,7 @@ class Environment:
 
     """
 
-    def __init__(self, initial_time: SimTime=0):
+    def __init__(self, initial_time: SimTime = 0):
         self._now = initial_time
         self._queue: List[Tuple[SimTime, EventPriority, int, Event]] = []
         self._eid = count()
@@ -79,6 +112,7 @@ class Environment:
     def active_process(self) -> Optional[Process]:
         """The currently active process of the environment."""
         return self._active_proc
+
     if TYPE_CHECKING:
 
         def process(self, generator: ProcessGenerator) -> Process:
@@ -86,7 +120,7 @@ class Environment:
             *generator*."""
             return Process(self, generator)
 
-        def timeout(self, delay: SimTime=0, value: Optional[Any]=None) -> Timeout:
+        def timeout(self, delay: SimTime = 0, value: Optional[Any] = None) -> Timeout:
             """Return a new :class:`~simpy.events.Timeout` event with a *delay*
             and, optionally, a *value*."""
             return Timeout(self, delay, value)
@@ -113,7 +147,9 @@ class Environment:
         all_of = BoundClass(AllOf)
         any_of = BoundClass(AnyOf)
 
-    def schedule(self, event: Event, priority: EventPriority=NORMAL, delay: SimTime=0) -> None:
+    def schedule(
+        self, event: Event, priority: EventPriority = NORMAL, delay: SimTime = 0
+    ) -> None:
         """Schedule an *event* with a given *priority* and a *delay*."""
         heappush(self._queue, (self._now + delay, priority, next(self._eid), event))
 
@@ -134,7 +170,7 @@ class Environment:
         try:
             self._now, _, _, event = heappop(self._queue)
         except IndexError:
-            raise EmptySchedule()
+            raise EmptySchedule
 
         # Process the event
         event._ok = True
@@ -143,7 +179,7 @@ class Environment:
             event._value = event.callbacks
             event.callbacks = None
 
-    def run(self, until: Optional[Union[SimTime, Event]]=None) -> Optional[Any]:
+    def run(self, until: Optional[Union[SimTime, Event]] = None) -> Optional[Any]:
         """Executes :meth:`step()` until the given criterion *until* is met.
 
         - If it is ``None`` (which is the default), this method will return
@@ -164,7 +200,9 @@ class Environment:
                 at = float(until)
 
                 if at <= self.now:
-                    raise ValueError(f'until(={at}) must be > the current simulation time.')
+                    raise ValueError(
+                        f'until(={at}) must be > the current simulation time.'
+                    )
 
                 # Schedule the event with URGENT priority to make sure it is
                 # handled before all time events at the same time.
@@ -185,4 +223,6 @@ class Environment:
         except EmptySchedule:
             if until is not None:
                 if not at._ok:
-                    raise RuntimeError('No scheduled events left but "until" event was not triggered')
+                    raise RuntimeError(
+                        'No scheduled events left but "until" event was not triggered'
+                    )
