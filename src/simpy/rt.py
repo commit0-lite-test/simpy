@@ -1,6 +1,7 @@
 """Execution environment for events that synchronizes passing of time
 with the real-time (aka *wall-clock time*).
 """
+
 from time import monotonic, sleep
 
 from simpy.core import Environment, Infinity, SimTime
@@ -67,6 +68,6 @@ class RealtimeEnvironment(Environment):
                 sleep(sleep_time)
 
             if self._strict and monotonic() - real_time > 0:
-                raise RuntimeError("Simulation too slow for real-time execution")
+                raise RuntimeError('Simulation too slow for real-time execution')
 
         return Environment.step(self)
