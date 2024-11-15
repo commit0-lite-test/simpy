@@ -228,7 +228,7 @@ class Environment:
             return exc.args[0]  # == until.value
         except EmptySchedule:
             if until is not None:
-                if not at._ok:
+                if not getattr(at, '_ok', False):
                     raise RuntimeError(
                         'No scheduled events left but "until" event was not triggered'
-                    )
+                    ) from None
