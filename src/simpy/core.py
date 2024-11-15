@@ -52,7 +52,7 @@ class BoundClass(Generic[T]):
     def __get__(
         self,
         instance: Optional[BoundClass[T]],
-        owner: Optional[Type[BoundClass[T]]] = None
+        owner: Optional[Type[BoundClass[T]]] = None,
     ) -> Union[Type[T], MethodType]:
         if instance is None:
             return self.cls
@@ -150,10 +150,7 @@ class Environment:
         any_of = BoundClass(AnyOf)
 
     def schedule(
-        self,
-        event: Event,
-        priority: EventPriority = NORMAL,
-        delay: SimTime = 0
+        self, event: Event, priority: EventPriority = NORMAL, delay: SimTime = 0
     ) -> None:
         """Schedule an *event* with a given *priority* and a *delay*."""
         heappush(self._queue, (self._now + delay, priority, next(self._eid), event))
@@ -175,7 +172,7 @@ class Environment:
         try:
             self._now, _, _, event = heappop(self._queue)
         except IndexError:
-            raise EmptySchedule() from None
+            raise EmptySchedule from None
 
         # Process the event
         event._ok = True
