@@ -32,7 +32,10 @@ class BoundClass(Generic[T]):
     def bind_early(instance: object) -> None:
         """Bind all :class:`BoundClass` attributes of the *instance's* class
         to the instance itself to increase performance."""
-        pass
+        cls = type(instance)
+        for name, obj in cls.__dict__.items():
+            if isinstance(obj, BoundClass):
+                setattr(instance, name, obj.__get__(instance, cls))
 
 class EmptySchedule(Exception):
     """Thrown by an :class:`Environment` if there are no further events to be
@@ -45,7 +48,7 @@ class StopSimulation(Exception):
     def callback(cls, event: Event) -> None:
         """Used as callback in :meth:`Environment.run()` to stop the simulation
         when the *until* event occurred."""
-        pass
+        raise cls(event.value)
 SimTime = Union[int, float]
 
 class Environment:
@@ -70,12 +73,12 @@ class Environment:
     @property
     def now(self) -> SimTime:
         """The current simulation time."""
-        pass
+        return self._now
 
     @property
     def active_process(self) -> Optional[Process]:
         """The currently active process of the environment."""
-        pass
+        return self._active_proc
     if TYPE_CHECKING:
 
         def process(self, generator: ProcessGenerator) -> Process:
@@ -112,12 +115,15 @@ class Environment:
 
     def schedule(self, event: Event, priority: EventPriority=NORMAL, delay: SimTime=0) -> None:
         """Schedule an *event* with a given *priority* and a *delay*."""
-        pass
+        heappush(self._queue, (self._now + delay, priority, next(self._eid), event))
 
     def peek(self) -> SimTime:
         """Get the time of the next scheduled event. Return
         :data:`~simpy.core.Infinity` if there is no further event."""
-        pass
+        try:
+            return self._queue[0][0]
+        except IndexError:
+            return Infinity
 
     def step(self) -> None:
         """Process the next event.
@@ -125,7 +131,17 @@ class Environment:
         Raise an :exc:`EmptySchedule` if no further events are available.
 
         """
-        pass
+        try:
+            self._now, _, _, event = heappop(self._queue)
+        except IndexError:
+            raise EmptySchedule()
+
+        # Process the event
+        event._ok = True
+        event.callbacks and event.callbacks(event)
+        if not event._defused:
+            event._value = event.callbacks
+            event.callbacks = None
 
     def run(self, until: Optional[Union[SimTime, Event]]=None) -> Optional[Any]:
         """Executes :meth:`step()` until the given criterion *until* is met.
@@ -142,4 +158,31 @@ class Environment:
           until the environment's time reaches *until*.
 
         """
-        pass
+        if until is not None:
+            if not isinstance(until, Event):
+                # Assume it's a number if it's not None and not an Event
+                at = float(until)
+
+                if at <= self.now:
+                    raise ValueError(f'until(={at}) must be > the current simulation time.')
+
+                # Schedule the event with URGENT priority to make sure it is
+                # handled before all time events at the same time.
+                event = Event(self)
+                event._ok = True
+                event._value = None
+                self.schedule(event, URGENT, at - self.now)
+            else:
+                at = until
+
+            until.callbacks.append(StopSimulation.callback)
+
+        try:
+            while True:
+                self.step()
+        except StopSimulation as exc:
+            return exc.args[0]  # == until.value
+        except EmptySchedule:
+            if until is not None:
+                if not at._ok:
+                    raise RuntimeError('No scheduled events left but "until" event was not triggered')
