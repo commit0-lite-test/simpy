@@ -6,6 +6,8 @@ A collection of utility functions:
 
 """
 
+from typing import Any, Generator
+
 from simpy.core import Environment, SimTime
 from simpy.events import Event, Process, ProcessGenerator
 
