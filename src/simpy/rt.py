@@ -2,8 +2,11 @@
 with the real-time (aka *wall-clock time*).
 
 """
+
 from time import monotonic, sleep
-from simpy.core import EmptySchedule, Environment, Infinity, SimTime
+
+from simpy.core import Environment, Infinity, SimTime
+
 
 class RealtimeEnvironment(Environment):
     """Execution environment for an event-based simulation which is
@@ -19,7 +22,9 @@ class RealtimeEnvironment(Environment):
 
     """
 
-    def __init__(self, initial_time: SimTime=0, factor: float=1.0, strict: bool=True):
+    def __init__(
+        self, initial_time: SimTime = 0, factor: float = 1.0, strict: bool = True
+    ):
         Environment.__init__(self, initial_time)
         self.env_start = initial_time
         self.real_start = monotonic()
