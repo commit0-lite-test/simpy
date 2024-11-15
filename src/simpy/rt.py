@@ -1,4 +1,5 @@
-"""Execution environment for events that synchronizes passing of time
+"""
+Execution environment for events that synchronizes passing of time
 with the real-time (aka *wall-clock time*).
 """
 
@@ -8,7 +9,8 @@ from simpy.core import Environment, Infinity, SimTime
 
 
 class RealtimeEnvironment(Environment):
-    """Execution environment for an event-based simulation which is
+    """
+    Execution environment for an event-based simulation which is
     synchronized with the real-time (also known as wall-clock time). A time
     step will take *factor* seconds of real time (one second by default).
     A step from ``0`` to ``3`` with a ``factor=0.5`` will, for example, take at
@@ -35,13 +37,16 @@ class RealtimeEnvironment(Environment):
 
     @property
     def strict(self) -> bool:
-        """Running mode of the environment. :meth:`step()` will raise a
+        """
+        Running mode of the environment. :meth:`step()` will raise a
         :exc:`RuntimeError` if this is set to ``True`` and the processing of
-        events takes too long."""
+        events takes too long.
+        """
         return self._strict
 
     def sync(self) -> None:
-        """Synchronize the internal time with the current wall-clock time.
+        """
+        Synchronize the internal time with the current wall-clock time.
 
         This can be useful to prevent :meth:`step()` from raising an error if
         a lot of time passes between creating the RealtimeEnvironment and
@@ -51,7 +56,8 @@ class RealtimeEnvironment(Environment):
         self.real_start = monotonic()
 
     def step(self) -> None:
-        """Process the next event after enough real-time has passed for the
+        """
+        Process the next event after enough real-time has passed for the
         event to happen.
 
         The delay is scaled according to the real-time :attr:`factor`. With
