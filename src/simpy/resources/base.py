@@ -55,7 +55,8 @@ class Put(Event, ContextManager['Put'], Generic[ResourceType]):
         method is called automatically.
 
         """
-        pass
+        if self.resource.put_queue and self in self.resource.put_queue:
+            self.resource.put_queue.remove(self)
 
 class Get(Event, ContextManager['Get'], Generic[ResourceType]):
     """Generic event for requesting to get something from the *resource*.
@@ -98,7 +99,8 @@ class Get(Event, ContextManager['Get'], Generic[ResourceType]):
         method is called automatically.
 
         """
-        pass
+        if self.resource.get_queue and self in self.resource.get_queue:
+            self.resource.get_queue.remove(self)
 PutType = TypeVar('PutType', bound=Put)
 GetType = TypeVar('GetType', bound=Get)
 
@@ -137,7 +139,7 @@ class BaseResource(Generic[PutType, GetType]):
     @property
     def capacity(self) -> Union[float, int]:
         """Maximum capacity of the resource."""
-        pass
+        return self._capacity
     if TYPE_CHECKING:
 
         def put(self) -> Put:
