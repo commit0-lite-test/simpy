@@ -114,7 +114,7 @@ ignore = [
 [tool.ruff.format]
 quote-style = "single"
 
-[tool.ruff.isort]
+[tool.ruff.lint.isort]
 known-first-party = ["simpy"]
 
 [tool.ruff.lint.extend-per-file-ignores]
