@@ -168,7 +168,7 @@ class BaseResource(Generic[PutType, GetType]):
         :attr:`put_queue`, as long as the return value does not evaluate
         ``False``.
         """
-        pass
+        raise NotImplementedError("_do_put() must be implemented by subclasses")
 
     def _trigger_put(self, get_event: Optional[GetType]) -> None:
         """This method is called once a new put event has been created or a get
@@ -178,7 +178,12 @@ class BaseResource(Generic[PutType, GetType]):
         calls :meth:`_do_put` to check if the conditions for the event are met.
         If :meth:`_do_put` returns ``False``, the iteration is stopped early.
         """
-        pass
+        idx = 0
+        while idx < len(self.put_queue):
+            put_event = self.put_queue[idx]
+            if not self._do_put(put_event):
+                break
+            idx += 1
 
     def _do_get(self, event: GetType) -> Optional[bool]:
         """Perform the *get* operation.
@@ -191,7 +196,7 @@ class BaseResource(Generic[PutType, GetType]):
         :attr:`get_queue`, as long as the return value does not evaluate
         ``False``.
         """
-        pass
+        raise NotImplementedError("_do_get() must be implemented by subclasses")
 
     def _trigger_get(self, put_event: Optional[PutType]) -> None:
         """Trigger get events.
@@ -203,4 +208,9 @@ class BaseResource(Generic[PutType, GetType]):
         calls :meth:`_do_get` to check if the conditions for the event are met.
         If :meth:`_do_get` returns ``False``, the iteration is stopped early.
         """
-        pass
+        idx = 0
+        while idx < len(self.get_queue):
+            get_event = self.get_queue[idx]
+            if not self._do_get(get_event):
+                break
+            idx += 1
