@@ -5,11 +5,14 @@ A collection of utility functions:
    start_delayed
 
 """
-from typing import Generator
+
 from simpy.core import Environment, SimTime
 from simpy.events import Event, Process, ProcessGenerator
 
-def start_delayed(env: Environment, generator: ProcessGenerator, delay: SimTime) -> Process:
+
+def start_delayed(
+    env: Environment, generator: ProcessGenerator, delay: SimTime
+) -> Process:
     """Return a helper process that starts another process for *generator*
     after a certain *delay*.
 
@@ -32,13 +35,14 @@ def start_delayed(env: Environment, generator: ProcessGenerator, delay: SimTime)
 
     """
     if delay <= 0:
-        raise ValueError(f"delay must be > 0, got {delay}")
+        raise ValueError(f'delay must be > 0, got {delay}')
 
     def delayed_process(env: Environment, generator: ProcessGenerator, delay: SimTime):
         yield env.timeout(delay)
         yield from generator
 
     return env.process(delayed_process(env, generator, delay))
+
 
 def subscribe_at(event: Event) -> None:
     """Register at the *event* to receive an interrupt when it occurs.
@@ -50,7 +54,7 @@ def subscribe_at(event: Event) -> None:
 
     """
     if event.triggered:
-        raise RuntimeError("Event has already occurred")
+        raise RuntimeError('Event has already occurred')
 
     def interrupt_callback(event):
         process = event.env.active_process
