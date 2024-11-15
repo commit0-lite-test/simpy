@@ -84,12 +84,12 @@ class Environment:
         def process(self, generator: ProcessGenerator) -> Process:
             """Create a new :class:`~simpy.events.Process` instance for
             *generator*."""
-            pass
+            return Process(self, generator)
 
         def timeout(self, delay: SimTime=0, value: Optional[Any]=None) -> Timeout:
             """Return a new :class:`~simpy.events.Timeout` event with a *delay*
             and, optionally, a *value*."""
-            pass
+            return Timeout(self, delay, value)
 
         def event(self) -> Event:
             """Return a new :class:`~simpy.events.Event` instance.
@@ -97,15 +97,15 @@ class Environment:
             Yielding this event suspends a process until another process
             triggers the event.
             """
-            pass
+            return Event(self)
 
         def all_of(self, events: Iterable[Event]) -> AllOf:
             """Return a :class:`~simpy.events.AllOf` condition for *events*."""
-            pass
+            return AllOf(self, events)
 
         def any_of(self, events: Iterable[Event]) -> AnyOf:
             """Return a :class:`~simpy.events.AnyOf` condition for *events*."""
-            pass
+            return AnyOf(self, events)
     else:
         process = BoundClass(Process)
         timeout = BoundClass(Timeout)
