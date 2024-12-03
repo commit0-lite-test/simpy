@@ -276,28 +276,6 @@ class Timeout(Event):
         value_str = f', value={self._value!r}' if self._value is not None else ''
         return f'Timeout({self._delay}{value_str})'
 
-class Timeout(Event):
-    """A :class:`~simpy.events.Event` that gets processed after a *delay* has
-    passed.
-
-    This event is automatically triggered when it is created.
-    """
-
-    def __init__(self, env: Environment, delay: SimTime, value: Optional[Any] = None):
-        super().__init__(env)
-        if delay < 0:
-            raise ValueError(f'Negative delay {delay}')
-        self._value = value
-        self._delay = delay
-        self._ok = True
-        self._defused = False
-        env.schedule(self, NORMAL, delay)
-
-    def _desc(self) -> str:
-        """Return a string *Timeout(delay[, value=value])*."""
-        value_str = f', value={self._value!r}' if self._value is not None else ''
-        return f'Timeout({self._delay}{value_str})'
-
 
 class Initialize(Event):
     """Initializes a process. Only used internally by :class:`Process`.
