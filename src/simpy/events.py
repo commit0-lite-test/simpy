@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 """
 This module contains the basic event types used in SimPy.
 
@@ -13,8 +15,6 @@ used, there are several specialized subclasses of it.
     ~simpy.events.AllOf
 
 """
-
-from __future__ import annotations
 
 from typing import (
     TYPE_CHECKING,
@@ -32,17 +32,10 @@ from typing import (
 )
 
 from simpy.exceptions import Interrupt
-from typing import TYPE_CHECKING
 
 if TYPE_CHECKING:
     from types import FrameType
-    from __future__ import annotations
-    from typing import TYPE_CHECKING
-
-    if TYPE_CHECKING:
-        from simpy.core import Environment, SimTime
-
-    from simpy.core import PENDING
+    from simpy.core import Environment, SimTime, PENDING
 else:
     from simpy.core import Environment, SimTime, PENDING
 EventPriority = NewType('EventPriority', int)
