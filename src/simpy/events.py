@@ -36,7 +36,13 @@ from typing import TYPE_CHECKING
 
 if TYPE_CHECKING:
     from types import FrameType
-    from simpy.core import Environment, SimTime, PENDING
+    from __future__ import annotations
+    from typing import TYPE_CHECKING
+
+    if TYPE_CHECKING:
+        from simpy.core import Environment, SimTime
+
+    from simpy.core import PENDING
 else:
     from simpy.core import Environment, SimTime, PENDING
 EventPriority = NewType('EventPriority', int)

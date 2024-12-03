@@ -153,7 +153,10 @@ class Environment:
             from simpy.events import AnyOf
             return AnyOf(self, events)
     else:
-        from simpy.events import Process, Timeout, Event, AllOf, AnyOf
+        from typing import TYPE_CHECKING
+
+        if TYPE_CHECKING:
+            from simpy.events import Process, Timeout, Event, AllOf, AnyOf
         process = BoundClass(Process)
         timeout = BoundClass(Timeout)
         event = BoundClass(Event)
