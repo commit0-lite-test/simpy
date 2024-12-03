@@ -60,12 +60,12 @@ class BoundClass(Generic[T]):
 
     def __get__(
         self,
-        instance: Optional[BoundClass[T]],
-        owner: Optional[Type[BoundClass[T]]] = None,
-    ) -> Union[Type[T], MethodType]:
+        instance: Optional[Any],
+        owner: Optional[Type[Any]] = None,
+    ) -> Union[Type[T], Callable[..., T]]:
         if instance is None:
             return self.cls
-        return MethodType(self.cls, instance)
+        return lambda *args, **kwargs: self.cls(instance, *args, **kwargs)
 
     @staticmethod
     def bind_early(instance: Any) -> None:
@@ -74,7 +74,7 @@ class BoundClass(Generic[T]):
         cls = type(instance)
         for name, obj in cls.__dict__.items():
             if isinstance(obj, BoundClass):
-                setattr(instance, name, obj.__get__(instance, cls))  # type: ignore
+                setattr(instance, name, obj.__get__(instance, cls))
 
 
 class EmptySchedule(Exception):
