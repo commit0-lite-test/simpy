@@ -113,7 +113,6 @@ class Environment:
         self._eid = count()
         self._active_proc = None
         self._init_event_classes()
-        BoundClass.bind_early(self)
 
     @property
     def now(self) -> SimTime:
@@ -125,51 +124,39 @@ class Environment:
         """The currently active process of the environment."""
         return self._active_proc
 
-    if TYPE_CHECKING:
-        def process(self, generator: ProcessGenerator):
-            """Create a new :class:`~simpy.events.Process` instance for
-            *generator*."""
-            from simpy.events import Process
-            return Process(self, generator)
+    def process(self, generator: ProcessGenerator):
+        """Create a new :class:`~simpy.events.Process` instance for
+        *generator*."""
+        from simpy.events import Process
+        return Process(self, generator)
 
-        def timeout(self, delay: SimTime = 0, value: Optional[Any] = None):
-            """Return a new :class:`~simpy.events.Timeout` event with a *delay*
-            and, optionally, a *value*."""
-            from simpy.events import Timeout
-            return Timeout(self, delay, value)
+    def timeout(self, delay: SimTime = 0, value: Optional[Any] = None):
+        """Return a new :class:`~simpy.events.Timeout` event with a *delay*
+        and, optionally, a *value*."""
+        from simpy.events import Timeout
+        return Timeout(self, delay, value)
 
-        def event(self):
-            """Return a new :class:`~simpy.events.Event` instance.
+    def event(self):
+        """Return a new :class:`~simpy.events.Event` instance.
 
-            Yielding this event suspends a process until another process
-            triggers the event.
-            """
-            from simpy.events import Event
-            return Event(self)
+        Yielding this event suspends a process until another process
+        triggers the event.
+        """
+        from simpy.events import Event
+        return Event(self)
 
-        def all_of(self, events: Iterable[Event]):
-            """Return a :class:`~simpy.events.AllOf` condition for *events*."""
-            from simpy.events import AllOf
-            return AllOf(self, events)
+    def all_of(self, events: Iterable[Event]):
+        """Return a :class:`~simpy.events.AllOf` condition for *events*."""
+        from simpy.events import AllOf
+        return AllOf(self, events)
 
-        def any_of(self, events: Iterable[Event]):
-            """Return a :class:`~simpy.events.AnyOf` condition for *events*."""
-            from simpy.events import AnyOf
-            return AnyOf(self, events)
-    else:
-        process = None
-        timeout = None
-        event = None
-        all_of = None
-        any_of = None
+    def any_of(self, events: Iterable[Event]):
+        """Return a :class:`~simpy.events.AnyOf` condition for *events*."""
+        from simpy.events import AnyOf
+        return AnyOf(self, events)
 
     def _init_event_classes(self):
-        from simpy.events import Process, Timeout, Event, AllOf, AnyOf
-        self.process = BoundClass(Process)
-        self.timeout = BoundClass(Timeout)
-        self.event = BoundClass(Event)
-        self.all_of = BoundClass(AllOf)
-        self.any_of = BoundClass(AnyOf)
+        pass  # We don't need this method anymore
 
     def schedule(
         self, event: Event, priority: EventPriority = NORMAL, delay: SimTime = 0
