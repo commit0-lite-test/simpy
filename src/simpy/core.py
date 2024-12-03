@@ -23,7 +23,7 @@ from typing import (
 
 from typing import TYPE_CHECKING
 
-from simpy.events import NORMAL, URGENT
+from simpy import events
 
 if TYPE_CHECKING:
     from simpy.events import (
@@ -35,6 +35,9 @@ if TYPE_CHECKING:
         ProcessGenerator,
         Timeout,
     )
+
+NORMAL = events.NORMAL
+URGENT = events.URGENT
 
 PENDING: object = object()
 'Unique object to identify pending values of events.'
