@@ -125,6 +125,7 @@ class Event:
         """Return a string *Event()*."""
         return 'Event()'
 
+
 class Condition(Event):
     def _desc(self) -> str:
         return f'Condition({self._evaluate.__name__}, {list(self._events)})'
