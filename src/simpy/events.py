@@ -32,12 +32,13 @@ from typing import (
 )
 
 from simpy.exceptions import Interrupt
-from simpy.core import PENDING
+from typing import TYPE_CHECKING
 
 if TYPE_CHECKING:
     from types import FrameType
-
-    from simpy.core import Environment, SimTime
+    from simpy.core import Environment, SimTime, PENDING
+else:
+    from simpy.core import PENDING
 EventPriority = NewType('EventPriority', int)
 URGENT: EventPriority = EventPriority(0)
 'Priority of interrupts and process initialization events.'

@@ -21,17 +21,23 @@ from typing import (
     Union,
 )
 
-from simpy.events import (
-    NORMAL,
-    URGENT,
-    AllOf,
-    AnyOf,
-    Event,
-    EventPriority,
-    Process,
-    ProcessGenerator,
-    Timeout,
-)
+from typing import TYPE_CHECKING
+
+if TYPE_CHECKING:
+    from simpy.events import (
+        NORMAL,
+        URGENT,
+        AllOf,
+        AnyOf,
+        Event,
+        EventPriority,
+        Process,
+        ProcessGenerator,
+        Timeout,
+    )
+
+PENDING: object = object()
+'Unique object to identify pending values of events.'
 
 Infinity: float = float('inf')
 T = TypeVar('T')
