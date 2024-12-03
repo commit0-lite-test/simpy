@@ -35,9 +35,9 @@ from simpy.exceptions import Interrupt
 
 if TYPE_CHECKING:
     from types import FrameType
-    from simpy.core import Environment, SimTime, PENDING
-else:
-    from simpy.core import Environment, SimTime, PENDING
+    from simpy.core import Environment, SimTime
+
+PENDING = object()
 EventPriority = NewType('EventPriority', int)
 URGENT: EventPriority = EventPriority(0)
 'Priority of interrupts and process initialization events.'
