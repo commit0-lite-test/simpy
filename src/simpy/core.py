@@ -198,6 +198,24 @@ class Environment:
           until the environment's time reaches *until*.
 
         """
+        if until is None:
+            while self._queue:
+                self.step()
+        elif isinstance(until, Event):
+            if until.triggered:
+                return until.value
+            while not until.triggered:
+                self.step()
+            return until.value
+        else:
+            try:
+                until = float(until)
+            except ValueError:
+                raise ValueError(f"Expected 'until' to be a number, got '{until}'")
+            while self._queue and self._queue[0][0] <= until:
+                if self.now >= until:
+                    break
+                self.step()
         at: Union[Event, float]
         if until is not None:
             if not isinstance(until, Event):
@@ -206,7 +224,7 @@ class Environment:
 
                 if at <= self.now:
                     raise ValueError(
-                        f'until(={at}) must be > the current simulation time.'
+                        f'until(={at}) must be greater than the current simulation time.'
                     )
 
                 # Schedule the event with URGENT priority to make sure it is
