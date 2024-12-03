@@ -23,10 +23,10 @@ from typing import (
 
 from typing import TYPE_CHECKING
 
+from simpy.events import NORMAL, URGENT
+
 if TYPE_CHECKING:
     from simpy.events import (
-        NORMAL,
-        URGENT,
         AllOf,
         AnyOf,
         Event,
