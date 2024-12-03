@@ -89,8 +89,6 @@ class Timeout(Event):
     passed.
 
     This event is automatically triggered when it is created.
-
-
     """
 
     def __init__(self, env: Environment, delay: SimTime, value: Optional[Any] = None):
