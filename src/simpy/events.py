@@ -99,7 +99,7 @@ class Timeout(Event):
         self._delay = delay
         self._ok = True
         self._defused = False
-        env.schedule(self, env.NORMAL, delay)
+        env.schedule(self, NORMAL, delay)
 
     def _desc(self) -> str:
         """Return a string *Timeout(delay[, value=value])*."""
