@@ -32,7 +32,10 @@ from typing import (
 )
 
 from simpy.exceptions import Interrupt
-from simpy.events import Timeout
+from typing import TYPE_CHECKING
+
+if TYPE_CHECKING:
+    from simpy.events import Timeout
 
 if TYPE_CHECKING:
     from types import FrameType
@@ -78,6 +81,32 @@ class Event:
     """
 
     def __init__(self, env: Environment):
+
+# ... [rest of the file content] ...
+
+class Timeout(Event):
+    """A :class:`~simpy.events.Event` that gets processed after a *delay* has
+    passed.
+
+    This event is automatically triggered when it is created.
+
+
+    """
+
+    def __init__(self, env: Environment, delay: SimTime, value: Optional[Any] = None):
+        super().__init__(env)
+        if delay < 0:
+            raise ValueError(f'Negative delay {delay}')
+        self._value = value
+        self._delay = delay
+        self._ok = True
+        self._defused = False
+        env.schedule(self, NORMAL, delay)
+
+    def _desc(self) -> str:
+        """Return a string *Timeout(delay[, value=value])*."""
+        value_str = f', value={self._value!r}' if self._value is not None else ''
+        return f'Timeout({self._delay}{value_str})'
         self.env = env
         'The :class:`~simpy.core.Environment` the event lives in.'
         self.callbacks: EventCallbacks = []
