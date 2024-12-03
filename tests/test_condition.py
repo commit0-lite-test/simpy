@@ -124,7 +124,7 @@ def test_cond_with_uncaught_error(env):
         yield env.timeout(1) | env.process(explode(env, 2))
 
     env.process(process(env))
-    with pytest.raises(ValueError, match='Onoes, failed after'):
+    with pytest.raises(ValueError, match='Onoes, failed after 2!'):
         env.run()
     assert env.now == 2
 

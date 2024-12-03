@@ -307,10 +307,9 @@ class Process(Event):
     """
 
     def __init__(self, env: Environment, generator: ProcessGenerator):
+        super().__init__(env)
         if not hasattr(generator, 'throw'):
             raise ValueError(f'{generator} is not a generator.')
-        self.env = env
-        self.callbacks: EventCallbacks = []
         self._generator = generator
         self._target: Event = Initialize(env, self)
 
@@ -513,7 +512,7 @@ class Condition(Event):
             self._remove_check_callbacks()
 
         if not self._ok and any(
-            not e.ok for e in self._events if e._value is not PENDING
+            not e.ok for e in self._events if hasattr(e, '_value') and e._value is not PENDING
         ):
             self.fail(RuntimeError('Condition failed'))
             self._remove_check_callbacks()
