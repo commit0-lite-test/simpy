@@ -109,6 +109,7 @@ class Environment:
         self._queue: List[Tuple[SimTime, EventPriority, int, Event]] = []
         self._eid = count()
         self._active_proc = None
+        self._init_event_classes()
         BoundClass.bind_early(self)
 
     @property
@@ -153,15 +154,19 @@ class Environment:
             from simpy.events import AnyOf
             return AnyOf(self, events)
     else:
-        from typing import TYPE_CHECKING
+        process = None
+        timeout = None
+        event = None
+        all_of = None
+        any_of = None
 
-        if TYPE_CHECKING:
-            from simpy.events import Process, Timeout, Event, AllOf, AnyOf
-        process = BoundClass(Process)
-        timeout = BoundClass(Timeout)
-        event = BoundClass(Event)
-        all_of = BoundClass(AllOf)
-        any_of = BoundClass(AnyOf)
+    def _init_event_classes(self):
+        from simpy.events import Process, Timeout, Event, AllOf, AnyOf
+        self.process = BoundClass(Process)
+        self.timeout = BoundClass(Timeout)
+        self.event = BoundClass(Event)
+        self.all_of = BoundClass(AllOf)
+        self.any_of = BoundClass(AnyOf)
 
     def schedule(
         self, event: Event, priority: EventPriority = NORMAL, delay: SimTime = 0
