@@ -251,5 +251,5 @@ class Environment:
                 and not getattr(at, '_ok', False)
             ):
                 raise RuntimeError(
-                    'No scheduled events left but "until" event was not triggered'
+                    'No scheduled events left but "until" event was not triggered:'
                 ) from None
