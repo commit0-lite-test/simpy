@@ -105,6 +105,9 @@ class Timeout(Event):
         """Return a string *Timeout(delay[, value=value])*."""
         value_str = f', value={self._value!r}' if self._value is not None else ''
         return f'Timeout({self._delay}{value_str})'
+
+class Event:
+    def __init__(self, env: Environment):
         self.env = env
         'The :class:`~simpy.core.Environment` the event lives in.'
         self.callbacks: EventCallbacks = []
