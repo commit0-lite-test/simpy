@@ -275,12 +275,12 @@ class Timeout(Event):
         """Return a string *Timeout(delay[, value=value])*."""
         value_str = f', value={self._value!r}' if self._value is not None else ''
         return f'Timeout({self._delay}{value_str})'
+
+class Timeout(Event):
     """A :class:`~simpy.events.Event` that gets processed after a *delay* has
     passed.
 
     This event is automatically triggered when it is created.
-
-
     """
 
     def __init__(self, env: Environment, delay: SimTime, value: Optional[Any] = None):
