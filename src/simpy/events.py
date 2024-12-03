@@ -32,6 +32,7 @@ from typing import (
 )
 
 from simpy.exceptions import Interrupt
+from simpy.events import Timeout
 
 if TYPE_CHECKING:
     from types import FrameType
