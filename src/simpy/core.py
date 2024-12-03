@@ -179,7 +179,7 @@ class Environment:
         if event.callbacks:
             for callback in event.callbacks:
                 callback(event)
-        if not event.defused:
+        if not event._defused:
             event._value = event.callbacks
             event.callbacks = []
 

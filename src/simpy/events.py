@@ -78,7 +78,7 @@ class Event:
     """
 
     _ok: bool
-    defused: bool
+    _defused: bool
     _value: Any = PENDING
 
     def __init__(self, env: Environment):
@@ -86,7 +86,7 @@ class Event:
         'The :class:`~simpy.core.Environment` the event lives in.'
         self.callbacks: EventCallbacks = []
         'List of functions that are called when the event is processed.'
-        self.defused = False
+        self._defused = False
 
     def __repr__(self) -> str:
         """Return the description of the event (see :meth:`_desc`) with the id
@@ -137,11 +137,11 @@ class Event:
         processed by the :class:`~simpy.core.Environment`.
 
         """
-        return self.defused
+        return self._defused
 
     @defused.setter
     def defused(self, value: bool):
-        self.defused = value
+        self._defused = value
 
     @property
     def value(self) -> Optional[Any]:
@@ -258,7 +258,7 @@ class Initialize(Event):
         self.callbacks: EventCallbacks = [process._resume]
         self._value: Any = None
         self._ok = True
-        self.defused = True
+        self._defused = True
         env.schedule(self, URGENT)
 
 
