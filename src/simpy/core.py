@@ -215,8 +215,8 @@ class Environment:
             except ValueError:
                 raise ValueError(f"Expected 'until' to be a number, got '{until}'")
             
-            if until <= self.now:
-                return  # If until is less than or equal to now, return immediately
+            if until < self.now:
+                raise ValueError(f'until(={until}) must be greater than the current simulation time.')
             
             while self._queue and self._queue[0][0] <= until:
                 self.step()
@@ -224,3 +224,42 @@ class Environment:
                     break
 
         return None
+
+    def step(self) -> None:
+        """Process the next event.
+
+        Raise an :exc:`EmptySchedule` if no further events are available.
+
+        """
+        try:
+            self._now, _, _, event = heappop(self._queue)
+        except IndexError:
+            raise EmptySchedule()
+
+        # Process the event
+        event._ok = True
+        event._defused = False
+
+        if event._value is not PENDING:
+            if event.callbacks:
+                event._value = None
+                for callback in event.callbacks:
+                    callback(event)
+                event.callbacks = None  # type: ignore
+            if not event._defused:
+                if isinstance(event._value, Exception):
+                    raise event._value
+        else:
+            event._value = None
+            for callback in event.callbacks:
+                callback(event)
+            event.callbacks = None  # type: ignore
+
+    def timeout(self, delay: SimTime = 0, value: Optional[Any] = None) -> Timeout:
+        """Schedule a :class:`~simpy.events.Timeout` event for time *now* +
+        *delay*."""
+        if delay < 0:
+            raise ValueError(f'Negative delay {delay}')
+        event = Timeout(self, delay, value)
+        self.schedule(event)
+        return event
