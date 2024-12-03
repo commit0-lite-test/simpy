@@ -77,16 +77,14 @@ class Event:
 
     """
 
-    _ok: bool
-    _defused: bool
-    _value: Any = PENDING
-
     def __init__(self, env: Environment):
         self.env = env
         'The :class:`~simpy.core.Environment` the event lives in.'
         self.callbacks: EventCallbacks = []
         'List of functions that are called when the event is processed.'
-        self._defused = False
+        self._value: Any = PENDING
+        self._ok: bool = False
+        self._defused: bool = False
 
     def __repr__(self) -> str:
         """Return the description of the event (see :meth:`_desc`) with the id
@@ -231,13 +229,13 @@ class Timeout(Event):
     """
 
     def __init__(self, env: Environment, delay: SimTime, value: Optional[Any] = None):
+        super().__init__(env)
         if delay < 0:
             raise ValueError(f'Negative delay {delay}')
-        self.env = env
-        self.callbacks: EventCallbacks = []
         self._value = value
         self._delay = delay
         self._ok = True
+        self._defused = False
         env.schedule(self, NORMAL, delay)
 
     def _desc(self) -> str:
@@ -515,7 +513,7 @@ class Condition(Event):
             self._remove_check_callbacks()
 
         if not self._ok and any(
-            not e._ok for e in self._events if e._value is not PENDING
+            not e.ok for e in self._events if e._value is not PENDING
         ):
             self.fail(RuntimeError('Condition failed'))
             self._remove_check_callbacks()
