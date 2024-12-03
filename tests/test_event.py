@@ -57,8 +57,8 @@ def test_names(env):
     )
 
     assert re.match(
-        r'<Condition\(all_events, \(<Event\(\) object at 0x.*>, '
-        r'<Event\(\) object at 0x.*>\)\) object at 0x.*>',
+        r'<Condition\(all_events, \[<Event\(\) object at 0x.*>, '
+        r'<Event\(\) object at 0x.*>\]\) object at 0x.*>',
         str(env.event() & env.event()),
     )
 
@@ -79,7 +79,7 @@ def test_unavailable_value(env):
     trying to access it will result in a AttributeError."""
     event = env.event()
 
-    with pytest.raises(AttributeError, match='.* is not yet available$'):
+    with pytest.raises(AttributeError, match='Value not yet available'):
         _ = event.value
 
 

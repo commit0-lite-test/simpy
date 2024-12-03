@@ -37,6 +37,9 @@ if TYPE_CHECKING:
     from types import FrameType
 
     from simpy.core import Environment, SimTime
+
+PENDING: object = object()
+'Unique object to identify pending values of events.'
 PENDING: object = object()
 'Unique object to identify pending values of events.'
 EventPriority = NewType('EventPriority', int)
@@ -94,6 +97,10 @@ class Event:
     def _desc(self) -> str:
         """Return a string *Event()*."""
         return 'Event()'
+
+class Condition(Event):
+    def _desc(self) -> str:
+        return f'Condition({self._evaluate.__name__}, {list(self._events)})'
 
     @property
     def triggered(self) -> bool:
