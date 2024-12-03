@@ -205,6 +205,8 @@ class Environment:
             if until.triggered:
                 return until.value
             while not until.triggered:
+                if not self._queue:
+                    raise RuntimeError('No scheduled events left but "until" event was not triggered')
                 self.step()
             return until.value
         else:
@@ -212,44 +214,13 @@ class Environment:
                 until = float(until)
             except ValueError:
                 raise ValueError(f"Expected 'until' to be a number, got '{until}'")
+            
+            if until <= self.now:
+                return  # If until is less than or equal to now, return immediately
+            
             while self._queue and self._queue[0][0] <= until:
+                self.step()
                 if self.now >= until:
                     break
-                self.step()
-        at: Union[Event, float]
-        if until is not None:
-            if not isinstance(until, Event):
-                # Assume it's a number if it's not None and not an Event
-                at = float(until)
 
-                if at <= self.now:
-                    raise ValueError(
-                        f'until(={at}) must be greater than the current simulation time.'
-                    )
-
-                # Schedule the event with URGENT priority to make sure it is
-                # handled before all time events at the same time.
-                event = Event(self)
-                event._ok = True
-                event._value = None
-                self.schedule(event, URGENT, at - self.now)
-            else:
-                at = until
-
-            if isinstance(until, Event):
-                until.callbacks.append(StopSimulation.callback)
-
-        try:
-            while True:
-                self.step()
-        except StopSimulation as exc:
-            return exc.args[0]  # == until.value
-        except EmptySchedule:
-            if (
-                until is not None
-                and isinstance(at, Event)
-                and not getattr(at, '_ok', False)
-            ):
-                raise RuntimeError(
-                    'No scheduled events left but "until" event was not triggered:'
-                ) from None
+        return None
